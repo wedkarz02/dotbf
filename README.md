@@ -1,12 +1,11 @@
 <h1><code>.bf</code></h1>
 
-Brainfuck interpreter written in Rust for fun.
+Brainfuck interpreter written in Rust for fun over the evening.
 
-> [NOTE] This readme is incomplete. More details coming soon.
+The ```examples/``` directory has some example ```.bf``` programs for you to try out and have fun. They all come from [this](https://en.wikipedia.org/wiki/Brainfuck) Wikipedia page.
 
-## Table of Contents
-
-* [Requirements](#requirements)
+> [!NOTE]
+> I didn't put much effort into making sure that this is super error proof so stuff might explode if you push it too much. Have fun!
 
 ## Requirements
 
@@ -31,6 +30,8 @@ Build the application using ```cargo``` in release mode:
 $ cargo build --release
 ```
 
+Release mode is required due to Rust's integer overflow quirks.
+
 The binary is self-contained so you can easily copy / move / symlink it from the ```target/``` directory:
 
 ```bash
@@ -40,6 +41,13 @@ $ ln ./target/release/dotbf ~/.local/bin
 ```
 
 ## Usage
+
+There's really not much to it:
+
+```bash
+# Usage: dotbf <FILE PATH>
+$ dotbf main.bf
+```
 
 ## License
 
