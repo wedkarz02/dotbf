@@ -55,49 +55,46 @@ fn parse(tokens: &[Token]) -> Result<Vec<Instruction>, String> {
         .iter()
         .enumerate()
     {
-        if stack_len > 0 {
-            match tok {
-                Token::OpenLoop => stack_len += 1,
-                Token::CloseLoop => {
-                    stack_len -= 1;
-                    if stack_len == 0 {
-                        instructions.push(Instruction::Loop(parse(&tokens[ret_ptr + 1..i])?));
-                    }
-                }
-                _ => {}
-            }
+        if stack_len > 0 && !matches!(tok, Token::OpenLoop | Token::CloseLoop) {
             continue;
         }
 
-        let instruction = match tok {
-            Token::MoveRight => Instruction::MoveRight,
-            Token::MoveLeft => Instruction::MoveLeft,
-            Token::Increment => Instruction::Increment,
-            Token::Decrement => Instruction::Decrement,
-            Token::Output => Instruction::Output,
-            Token::Input => Instruction::Input,
+        match tok {
+            Token::ProgramStart | Token::ProgramEnd => instructions.push(Instruction::NoOp),
+            Token::MoveRight => instructions.push(Instruction::MoveRight),
+            Token::MoveLeft => instructions.push(Instruction::MoveLeft),
+            Token::Increment => instructions.push(Instruction::Increment),
+            Token::Decrement => instructions.push(Instruction::Decrement),
+            Token::Output => instructions.push(Instruction::Output),
+            Token::Input => instructions.push(Instruction::Input),
             Token::OpenLoop => {
+                if stack_len == 0 {
+                    ret_ptr = i;
+                }
                 stack_len += 1;
-                ret_ptr = i;
-                Instruction::NoOp
             }
             Token::CloseLoop => {
-                return Err("Unexpected token".to_owned());
+                stack_len -= 1;
+                match stack_len {
+                    0 => {
+                        let nested_instructions = parse(&tokens[ret_ptr + 1..i])?;
+                        instructions.push(Instruction::Loop(nested_instructions));
+                    }
+                    x if x < 0 => return Err("Unexpected token: ']'".to_owned()),
+                    _ => {}
+                }
             }
-            Token::ProgramStart => Instruction::NoOp,
-            Token::ProgramEnd => Instruction::NoOp,
         };
-        instructions.push(instruction);
+    }
+
+    if stack_len != 0 {
+        return Err("Unexpected token: '['".to_owned());
     }
 
     Ok(instructions)
 }
 
-fn interpret(
-    instructions: &[Instruction],
-    data: &mut [u8],
-    dptr: &mut usize,
-) -> Result<(), String> {
+fn interpret(instructions: &[Instruction], data: &mut [u8], dptr: &mut usize) {
     for instr in instructions {
         match instr {
             Instruction::MoveRight => *dptr += 1,
@@ -114,13 +111,12 @@ fn interpret(
             }
             Instruction::Loop(in_loop_instr) => {
                 while data[*dptr] != 0 {
-                    interpret(in_loop_instr, data, dptr)?;
+                    interpret(in_loop_instr, data, dptr);
                 }
             }
             Instruction::NoOp => {}
         }
     }
-    Ok(())
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -144,7 +140,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut data: [u8; 30_000] = [0; 30_000];
     let mut dptr: usize = 0;
-    interpret(&instructions, &mut data, &mut dptr)?;
+    interpret(&instructions, &mut data, &mut dptr);
 
     Ok(())
 }

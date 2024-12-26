@@ -1,3 +1,0 @@
-* text=auto
-*.sh text eof=lf
-*.bat text eof=crlf
