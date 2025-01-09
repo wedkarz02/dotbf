@@ -22,6 +22,14 @@ $ git clone https://github.com/wedkarz02/dotbf.git
 
 Or use the *Download ZIP* option from the Github repository [page](https://github.com/wedkarz02/dotbf.git).
 
+## Install
+
+Use ```cargo install``` command to install from source:
+
+```bash
+$ cargo install --path .
+```
+
 ## Building
 
 Build the application using ```cargo``` in release mode:
